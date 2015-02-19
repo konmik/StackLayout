@@ -42,10 +42,12 @@ public class AnchoredViewTest extends BaseActivityTest<LayoutTestActivity> {
         WrappingInflater inflater = new TestInflater(getActivity().getLayoutInflater());
         Parceler parceler = new TestParceler(inflater);
 
-        stackLayout.setInflater(inflater);
-        stackLayout.setParceler(parceler);
-        stackLayout.setRequirementsAnalyzer(new DefaultRequirementsAnalyzer());
-        stackLayout.setActionHandler(new ImmediateActionHandler());
+        stackLayout.set()
+            .setInflater(inflater)
+            .setParceler(parceler)
+            .setRequirementsAnalyzer(new DefaultRequirementsAnalyzer())
+            .setActionHandler(new ImmediateActionHandler())
+            .apply();
     }
 
     private void layoutTest(final int anchorCornerGravity, final int contentCornerGravity, final Runnable test) throws Throwable {

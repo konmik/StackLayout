@@ -2,8 +2,10 @@ package stacklayout.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 public class ArrayFn {
+
     public interface Predicate<T> {
         boolean apply(T t);
     }
@@ -30,6 +32,13 @@ public class ArrayFn {
     public static <T> ArrayList<T> join(Collection<T> collection1, Collection<T> collection2) {
         ArrayList<T> result = new ArrayList<>(collection1);
         result.addAll(collection2);
+        return result;
+    }
+
+    public static <T> ArrayList<T> reverse(List<T> list) {
+        ArrayList<T> result = new ArrayList<>(list.size());
+        for (int i = list.size() - 1; i >= 0; i--)
+            result.add(list.get(i));
         return result;
     }
 

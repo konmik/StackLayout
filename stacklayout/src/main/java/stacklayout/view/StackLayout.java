@@ -1,10 +1,15 @@
 package stacklayout.view;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.util.Pair;
+import android.util.SparseArray;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.FrameLayout;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,25 +17,36 @@ import java.util.List;
 
 import stacklayout.action.ActionHandler;
 import stacklayout.action.ActionType;
+import stacklayout.action.ImmediateActionHandler;
+import stacklayout.helper.DefaultParceler;
+import stacklayout.helper.DefaultWrappingInflater;
+import stacklayout.helper.Parceler;
 import stacklayout.helper.WrappingInflater;
+import stacklayout.requirement.DefaultRequirementsAnalyzer;
 import stacklayout.requirement.RequirementsAnalyzer;
 import stacklayout.util.ArrayFn;
 
 import static stacklayout.util.ArrayFn.filter;
 import static stacklayout.util.ArrayFn.join;
 import static stacklayout.util.ArrayFn.map;
+import static stacklayout.util.ArrayFn.reverse;
+import static stacklayout.util.ViewFn.getChildren;
 
-public class StackLayout extends FreezingLayout implements ViewStack { // TODO: check everywhere if wrapped/unwrapped views are correctly used
+public class StackLayout extends FrameLayout implements ViewStack {
 
-    public interface OnExitViewListener {
+    private static final String FREEZER_KEY = "freezer";
+    private static final String PARENT_KEY = "parent";
+
+    public interface OnDestroyViewListener {
         void onExitView(View view);
         void onFreezeView(View view);
     }
 
-    private RequirementsAnalyzer requirementsAnalyzer;
+    private Freezer freezer;
+    private RequirementsAnalyzer analyzer;
     private WrappingInflater inflater;
     private ActionHandler actionHandler;
-    private OnExitViewListener onExitViewListener;
+    private OnDestroyViewListener onDestroyViewListener;
     private boolean replaceOnTop;
 
     boolean inTransaction;
@@ -49,24 +65,95 @@ public class StackLayout extends FreezingLayout implements ViewStack { // TODO: 
         super(context, attrs, defStyle);
     }
 
-    public void setRequirementsAnalyzer(RequirementsAnalyzer requirementsAnalyzer) {
-        this.requirementsAnalyzer = requirementsAnalyzer;
+    public class SettingsEditor {
+        private Freezer freezer;
+        private WrappingInflater inflater;
+        private Parceler parceler;
+        private RequirementsAnalyzer requirementsAnalyzer;
+        private ActionHandler actionHandler;
+        private OnDestroyViewListener onDestroyViewListener;
+        private boolean replaceOnTop;
+
+        public SettingsEditor setFreezer(Freezer freezer) {
+            this.freezer = freezer;
+            return this;
+        }
+
+        public SettingsEditor setInflater(WrappingInflater inflater) {
+            this.inflater = inflater;
+            return this;
+        }
+
+        public SettingsEditor setParceler(Parceler parceler) {
+            this.parceler = parceler;
+            return this;
+        }
+
+        public SettingsEditor setRequirementsAnalyzer(RequirementsAnalyzer requirementsAnalyzer) {
+            this.requirementsAnalyzer = requirementsAnalyzer;
+            return this;
+        }
+
+        public SettingsEditor setActionHandler(ActionHandler actionHandler) {
+            this.actionHandler = actionHandler;
+            return this;
+        }
+
+        public SettingsEditor setOnDestroyViewListener(OnDestroyViewListener onDestroyViewListener) {
+            this.onDestroyViewListener = onDestroyViewListener;
+            return this;
+        }
+
+        public SettingsEditor setReplaceOnTop(boolean replaceOnTop) {
+            this.replaceOnTop = replaceOnTop;
+            return this;
+        }
+
+        public void apply() {
+            StackLayout.this.apply(this);
+        }
     }
 
-    public void setInflater(WrappingInflater inflater) {
-        this.inflater = inflater;
+    private void apply(SettingsEditor editor) {
+        inflater = editor.inflater != null ? editor.inflater : new DefaultWrappingInflater(LayoutInflater.from(getContext()), StackLayout.this);
+        Parceler parceler = editor.parceler != null ? editor.parceler : new DefaultParceler(inflater);
+        analyzer = editor.requirementsAnalyzer != null ? editor.requirementsAnalyzer : new DefaultRequirementsAnalyzer();
+
+        freezer = editor.freezer != null ? editor.freezer : new Freezer(this, inflater, parceler, analyzer);
+
+        actionHandler = editor.actionHandler != null ? editor.actionHandler : new ImmediateActionHandler();
+        onDestroyViewListener = editor.onDestroyViewListener;
+        replaceOnTop = editor.replaceOnTop;
     }
 
-    public void setActionHandler(ActionHandler actionHandler) {
-        this.actionHandler = actionHandler;
+    public SettingsEditor set() {
+        return new SettingsEditor();
     }
 
-    public void setOnExitViewListener(OnExitViewListener onExitViewListener) {
-        this.onExitViewListener = onExitViewListener;
+    @Override
+    protected Parcelable onSaveInstanceState() {
+        Bundle bundle = new Bundle();
+        bundle.putBundle(FREEZER_KEY, freezer.save(getPermanentChildren()));
+        bundle.putParcelable(PARENT_KEY, super.onSaveInstanceState());
+        return bundle;
     }
 
-    public void setReplaceOnTop(boolean replaceOnTop) {
-        this.replaceOnTop = replaceOnTop;
+    @Override
+    protected void onRestoreInstanceState(Parcelable state) {
+        Bundle bundle = (Bundle)state;
+        super.onRestoreInstanceState(bundle.getParcelable(PARENT_KEY));
+        freezer.restore(bundle.getBundle(FREEZER_KEY));
+        onActionEnd();
+    }
+
+    @Override
+    protected void dispatchSaveInstanceState(@NonNull SparseArray<Parcelable> container) {
+        container.put(getId(), onSaveInstanceState());
+    }
+
+    @Override
+    protected void dispatchRestoreInstanceState(@NonNull SparseArray<Parcelable> container) {
+        onRestoreInstanceState(container.get(getId()));
     }
 
     @Override
@@ -79,7 +166,7 @@ public class StackLayout extends FreezingLayout implements ViewStack { // TODO: 
         addView(wrap);
         actionChild(ActionType.PUSH_IN, wrap);
 
-        int count = requirementsAnalyzer.getRequirementCount(getClasses(currentChildren), inflater.unwrap(wrap).getClass());
+        int count = analyzer.getRequirementCount(getClasses(currentChildren), inflater.unwrap(wrap).getClass());
         for (int i = currentChildren.size() - count - 1; i >= 0; i--)
             actionChild(ActionType.PUSH_OUT, currentChildren.get(i));
 
@@ -101,13 +188,8 @@ public class StackLayout extends FreezingLayout implements ViewStack { // TODO: 
         currentChildren.remove(currentChildren.size() - 1);
 
         if (currentChildren.size() == 0) {
-            List<Class> frozenClasses = getFrozenClasses();
-            List<Class> stackClasses = join(frozenClasses, getClasses(currentChildren));
-            if (stackClasses.size() > 0) {
-                int required = requirementsAnalyzer.getRequirementCount(stackClasses, stackClasses.remove(stackClasses.size() - 1));
-                for (View wrap1 : unfreezeBottom(required + 1))
-                    actionChild(ActionType.POP_IN, wrap1);
-            }
+            for (View wrap1 : freezer.unfreezeBottom())
+                actionChild(ActionType.POP_IN, wrap1);
         }
 
         inTransaction = false;
@@ -118,7 +200,7 @@ public class StackLayout extends FreezingLayout implements ViewStack { // TODO: 
     public <T extends View> T replace(int layoutId) {
         inTransaction = true;
 
-        clearFrozen();
+        freezer.clear();
 
         List<View> children = getPermanentChildren();
         Collections.reverse(children);
@@ -145,7 +227,12 @@ public class StackLayout extends FreezingLayout implements ViewStack { // TODO: 
 
     @Override
     public <T> T findBackView(View frontView, Class<T> backViewClass) {
-        List<View> unwrappedStack = getUnwrappedPermanentChildren();
+        List<View> unwrappedStack = map(getPermanentChildren(), new ArrayFn.Converter<View, View>() {
+            @Override
+            public View convert(View wrap) {
+                return inflater.unwrap(wrap);
+            }
+        });
         for (int i = unwrappedStack.indexOf(frontView) - 1; i >= 0; i--) {
             View view = unwrappedStack.get(i);
             if (backViewClass.isInstance(view))
@@ -154,15 +241,8 @@ public class StackLayout extends FreezingLayout implements ViewStack { // TODO: 
         return null;
     }
 
-    @Override
-    protected void onRestoreInstanceState(Parcelable state) {
-        super.onRestoreInstanceState(state);
-        onActionEnd();
-    }
-
-    @Override
-    protected List<View> getAutoFreezeChildren() {
-        return getPermanentChildren();
+    public int getFrozenCount() {
+        return freezer.size();
     }
 
     private void actionChild(ActionType action, final View wrap) {
@@ -182,19 +262,19 @@ public class StackLayout extends FreezingLayout implements ViewStack { // TODO: 
 
     private void onActionEnd() {
         if (!inTransaction && inAction.size() == 0) {
-            exitOnActionsEnd();
+            destroyOnActionsEnd();
             freezeOnActionsEnd();
         }
     }
 
-    private void exitOnActionsEnd() {
+    private void destroyOnActionsEnd() {
         for (int p = completed.size() - 1; p >= 0; p--) {
             Pair<ActionType, View> pair = completed.get(p);
             if (pair.first.isExit()) {
                 completed.remove(p);
                 removeView(pair.second);
-                if (onExitViewListener != null)
-                    onExitViewListener.onExitView(inflater.unwrap(pair.second));
+                if (onDestroyViewListener != null)
+                    onDestroyViewListener.onExitView(inflater.unwrap(pair.second));
             }
         }
         completed.clear();
@@ -202,23 +282,12 @@ public class StackLayout extends FreezingLayout implements ViewStack { // TODO: 
 
     private void freezeOnActionsEnd() {
         List<View> wraps = getPermanentChildren();
-        List<Class> classes = getClasses(wraps);
-        if (classes.size() > 0) {
-            int required = requirementsAnalyzer.getRequirementCount(classes, classes.remove(classes.size() - 1));
-            int freeze = classes.size() - required;
-            freezeBottom(freeze);
-            if (onExitViewListener != null) {
-                for (int w = freeze - 1; w >= 0; w++)
-                    onExitViewListener.onFreezeView(inflater.unwrap(wraps.get(w)));
+        if (wraps.size() > 0) {
+            for (View wrap : reverse(freezer.freezeBottom(wraps))) {
+                if (onDestroyViewListener != null)
+                    onDestroyViewListener.onFreezeView(inflater.unwrap(wrap));
             }
         }
-    }
-
-    private List<View> getChildren() {
-        List<View> children = new ArrayList<>();
-        for (int i = 0, size = getChildCount(); i < size; i++)
-            children.add(getChildAt(i));
-        return children;
     }
 
     private List<View> getPermanentChildren() {
@@ -233,19 +302,10 @@ public class StackLayout extends FreezingLayout implements ViewStack { // TODO: 
                 return pair.second;
             }
         });
-        return filter(getChildren(), new ArrayFn.Predicate<View>() {
+        return filter(getChildren(this), new ArrayFn.Predicate<View>() {
             @Override
             public boolean apply(View wrap) {
                 return !out.contains(wrap);
-            }
-        });
-    }
-
-    private ArrayList<View> getUnwrappedPermanentChildren() {
-        return map(getPermanentChildren(), new ArrayFn.Converter<View, View>() {
-            @Override
-            public View convert(View wrap) {
-                return inflater.unwrap(wrap);
             }
         });
     }

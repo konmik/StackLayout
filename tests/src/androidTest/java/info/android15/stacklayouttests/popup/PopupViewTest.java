@@ -1,7 +1,6 @@
 package info.android15.stacklayouttests.popup;
 
 import android.test.UiThreadTest;
-import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import info.android15.stacklayouttests.LayoutTestActivity;
@@ -34,10 +33,12 @@ public class PopupViewTest extends BaseActivityTest<LayoutTestActivity> {
         WrappingInflater inflater = new TestInflater(getActivity().getLayoutInflater());
         Parceler parceler = new TestParceler(inflater);
 
-        stackLayout.setInflater(inflater);
-        stackLayout.setParceler(parceler);
-        stackLayout.setRequirementsAnalyzer(new DefaultRequirementsAnalyzer());
-        stackLayout.setActionHandler(new ImmediateActionHandler());
+        stackLayout.set()
+            .setInflater(inflater)
+            .setParceler(parceler)
+            .setRequirementsAnalyzer(new DefaultRequirementsAnalyzer())
+            .setActionHandler(new ImmediateActionHandler())
+            .apply();
 
         stackLayout.push(R.layout.view1);
         testPopupView = stackLayout.push(R.layout.view_popup);

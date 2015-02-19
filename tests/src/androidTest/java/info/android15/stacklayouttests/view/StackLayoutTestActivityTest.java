@@ -27,6 +27,14 @@ public class StackLayoutTestActivityTest extends BaseActivityTest<LayoutTestActi
     volatile StackLayout layout;
     volatile WrappingInflater inflater;
     volatile Parceler parceler;
+    final View[] exit = new View[1];
+
+    ActionHandler delayedHandler = new ActionHandler() {
+        @Override
+        public void onStackAction(ActionType action, View view, Runnable onActionEnd) {
+            view.postDelayed(onActionEnd, 50);
+        }
+    };
 
     public StackLayoutTestActivityTest() {
         super(LayoutTestActivity.class);
@@ -37,7 +45,7 @@ public class StackLayoutTestActivityTest extends BaseActivityTest<LayoutTestActi
         getActivity();
     }
 
-    private void initLayout(int iteration) {
+    private void initLayout(int iteration, ActionHandler handler) {
         if (iteration == 0) {
             inflater = new TestInflater(getActivity().getLayoutInflater());
             parceler = new TestParceler(inflater);
@@ -48,10 +56,22 @@ public class StackLayoutTestActivityTest extends BaseActivityTest<LayoutTestActi
         }
 
         layout = new StackLayout(getActivity());
-        layout.setInflater(inflater);
-        layout.setParceler(parceler);
-        layout.setRequirementsAnalyzer(new DefaultRequirementsAnalyzer());
-        layout.setActionHandler(new ImmediateActionHandler());
+        layout.set()
+            .setInflater(inflater)
+            .setParceler(parceler)
+            .setRequirementsAnalyzer(new DefaultRequirementsAnalyzer())
+            .setActionHandler(handler != null ? handler : new ImmediateActionHandler())
+            .setOnDestroyViewListener(new StackLayout.OnDestroyViewListener() {
+                @Override
+                public void onExitView(View view) {
+                    exit[0] = view;
+                }
+
+                @Override
+                public void onFreezeView(View view) {
+                }
+            })
+            .apply();
 
         getActivity().container.removeAllViews();
         getActivity().container.addView(layout);
@@ -81,7 +101,7 @@ public class StackLayoutTestActivityTest extends BaseActivityTest<LayoutTestActi
             runTestOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    initLayout(finalIteration);
+                    initLayout(finalIteration, null);
                     push1121();
                 }
             });
@@ -99,7 +119,7 @@ public class StackLayoutTestActivityTest extends BaseActivityTest<LayoutTestActi
     @UiThreadTest
     public void testPop() throws Throwable {
         for (int iteration = 0; iteration < ITERATIONS_COUNT; iteration++) {
-            initLayout(iteration);
+            initLayout(iteration, null);
             push1121();
 
             layout.pop(inflater.unwrap(layout.getChildAt(layout.getChildCount() - 1)));
@@ -123,7 +143,7 @@ public class StackLayoutTestActivityTest extends BaseActivityTest<LayoutTestActi
     @UiThreadTest
     public void testReplace() throws Throwable {
         for (int iteration = 0; iteration < ITERATIONS_COUNT; iteration++) {
-            initLayout(iteration);
+            initLayout(iteration, null);
             push1121();
 
             layout.pop(inflater.unwrap(layout.getChildAt(layout.getChildCount() - 1)));
@@ -142,8 +162,7 @@ public class StackLayoutTestActivityTest extends BaseActivityTest<LayoutTestActi
             runTestOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    initLayout(finalIteration);
-                    setDelayerExecutor(50);
+                    initLayout(finalIteration, delayedHandler);
                     layout.push(R.layout.view1);
                     layout.push(R.layout.view1);
                     layout.push(R.layout.view2);
@@ -169,8 +188,7 @@ public class StackLayoutTestActivityTest extends BaseActivityTest<LayoutTestActi
             runTestOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    initLayout(finalIteration);
-                    setDelayerExecutor(50);
+                    initLayout(finalIteration, delayedHandler);
                     layout.push(R.layout.view1);
                     layout.push(R.layout.view1);
                     layout.push(R.layout.view2);
@@ -199,8 +217,7 @@ public class StackLayoutTestActivityTest extends BaseActivityTest<LayoutTestActi
             runTestOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    initLayout(finalIteration);
-                    setDelayerExecutor(50);
+                    initLayout(finalIteration, delayedHandler);
                     layout.push(R.layout.view1);
                     layout.push(R.layout.view1);
                     layout.push(R.layout.view2);
@@ -226,19 +243,10 @@ public class StackLayoutTestActivityTest extends BaseActivityTest<LayoutTestActi
         }
     }
 
-    private void setDelayerExecutor(final int delay) {
-        layout.setActionHandler(new ActionHandler() {
-            @Override
-            public void onStackAction(ActionType action, View view, Runnable onActionEnd) {
-                view.postDelayed(onActionEnd, delay);
-            }
-        });
-    }
-
     @UiThreadTest
     public void testDependencies() {
         for (int iteration = 0; iteration < ITERATIONS_COUNT; iteration++) {
-            initLayout(iteration);
+            initLayout(iteration, null);
             layout.push(R.layout.view1);
             layout.push(R.layout.view2);
             layout.push(R.layout.view2);
@@ -259,8 +267,7 @@ public class StackLayoutTestActivityTest extends BaseActivityTest<LayoutTestActi
             runTestOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    initLayout(finalIteration);
-                    setDelayerExecutor(100);
+                    initLayout(finalIteration, delayedHandler);
                     layout.push(R.layout.view1);
                     layout.push(R.layout.view1);
                     layout.push(R.layout.view2);
@@ -283,18 +290,7 @@ public class StackLayoutTestActivityTest extends BaseActivityTest<LayoutTestActi
     @UiThreadTest
     public void testOnExit() throws Throwable {
         for (int iteration = 0; iteration < ITERATIONS_COUNT; iteration++) {
-            initLayout(iteration);
-            final View[] exit = new View[1];
-            layout.setOnExitViewListener(new StackLayout.OnExitViewListener() {
-                @Override
-                public void onExitView(View view) {
-                    exit[0] = view;
-                }
-
-                @Override
-                public void onFreezeView(View view) {
-                }
-            });
+            initLayout(iteration, null);
             layout.push(R.layout.view1);
             View view2 = layout.push(R.layout.view2);
             layout.pop(view2);
@@ -305,9 +301,8 @@ public class StackLayoutTestActivityTest extends BaseActivityTest<LayoutTestActi
     @UiThreadTest
     public void testActionExecution() throws Throwable {
         for (int iteration = 0; iteration < ITERATIONS_COUNT; iteration++) {
-            initLayout(iteration);
             final ArrayList<Pair<ActionType, View>> actions = new ArrayList<>();
-            layout.setActionHandler(new ActionHandler() {
+            initLayout(iteration, new ActionHandler() {
                 @Override
                 public void onStackAction(ActionType action1, View view1, Runnable onActionEnd) {
                     actions.add(new Pair<>(action1, view1));

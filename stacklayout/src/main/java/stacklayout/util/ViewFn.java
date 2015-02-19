@@ -2,8 +2,12 @@ package stacklayout.util;
 
 import android.graphics.Rect;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.ViewTreeObserver;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ViewFn {
     public static <T> T findParent(View view, Class<T> clazz) {
@@ -11,6 +15,13 @@ public class ViewFn {
             if (clazz.isInstance(parent))
                 return clazz.cast(parent);
         return null;
+    }
+
+    public static List<View> getChildren(ViewGroup group) {
+        List<View> children = new ArrayList<>();
+        for (int i = 0, size = group.getChildCount(); i < size; i++)
+            children.add(group.getChildAt(i));
+        return children;
     }
 
     private static Rect baseRect = new Rect();
