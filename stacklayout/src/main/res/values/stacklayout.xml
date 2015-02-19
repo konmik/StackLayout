@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="view_layout_id" type="id" />
+
+    <declare-styleable name="PopupView">
+        <attr name="dim" format="reference" />
+        <attr name="decor" format="reference" />
+        <attr name="content" format="reference" />
+    </declare-styleable>
+
+    <declare-styleable name="AnchoredView">
+        <attr name="anchor_corner" format="enum">
+            <enum name="top_left" value="0x33" />
+            <enum name="top_right" value="0x35" />
+            <enum name="bottom_left" value="0x53" />
+            <enum name="bottom_right" value="0x55" />
+        </attr>
+        <attr name="popup_corner" format="enum">
+            <enum name="top_left" value="0x33" />
+            <enum name="top_right" value="0x35" />
+            <enum name="bottom_left" value="0x53" />
+            <enum name="bottom_right" value="0x55" />
+        </attr>
+    </declare-styleable>
+</resources>

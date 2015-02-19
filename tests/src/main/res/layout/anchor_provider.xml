@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<info.android15.stacklayouttests.popup.TestAnchorProvider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#00f">
+
+    <View
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginLeft="100dp"
+        android:layout_marginTop="200dp"
+        android:background="#f00" />
+
+</info.android15.stacklayouttests.popup.TestAnchorProvider>
