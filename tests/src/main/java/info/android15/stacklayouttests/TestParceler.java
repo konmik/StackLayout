@@ -38,7 +38,7 @@ public class TestParceler implements Parceler {
     }
 
     @Override
-    public View unparcel(Parcelable parcelable, ViewGroup parent) {
+    public View unparcel(Parcelable parcelable) {
         Bundle bundle = (Bundle)parcelable;
         View view = inflater.inflate(bundle.getInt(LAYOUT_ID_KEY));
         view.restoreHierarchyState(bundle.getSparseParcelableArray(STATE_KEY));

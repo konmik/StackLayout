@@ -6,6 +6,6 @@ import android.view.ViewGroup;
 
 public interface Parceler {
     Parcelable parcel(View view);
-    View unparcel(Parcelable parcelable, ViewGroup parent);
+    View unparcel(Parcelable parcelable);
     Class getClass(Parcelable parcelable);
 }

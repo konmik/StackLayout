@@ -3,7 +3,6 @@ package stacklayout.view;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.view.View;
-import android.view.ViewGroup;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,15 +18,18 @@ public class Freezer {
     private static final String FREEZER_KEY = "parcelables";
     private static final String AUTO_FREEZE_KEY = "auto_freeze";
 
-    private ViewGroup layout;
     private WrappingInflater inflater;
     private Parceler parceler;
     private RequirementsAnalyzer analyzer;
 
     private ArrayList<Parcelable> parcelables = new ArrayList<>();
 
-    public Freezer(ViewGroup layout, WrappingInflater inflater, Parceler parceler, RequirementsAnalyzer analyzer) {
-        this.layout = layout;
+    /**
+     * @param inflater
+     * @param parceler
+     * @param analyzer
+     */
+    public Freezer(WrappingInflater inflater, Parceler parceler, RequirementsAnalyzer analyzer) {
         this.inflater = inflater;
         this.parceler = parceler;
         this.analyzer = analyzer;
@@ -45,28 +47,28 @@ public class Freezer {
         return bundle;
     }
 
-    public void restore(Bundle bundle) {
+    /**
+     * @param bundle
+     * @return a list of views to restore
+     */
+    public List<View> restore(Bundle bundle) {
         parcelables = bundle.getParcelableArrayList(FREEZER_KEY);
-        for (Parcelable child : bundle.getParcelableArrayList(AUTO_FREEZE_KEY))
-            layout.addView(parceler.unparcel(child, layout));
+        return map(bundle.getParcelableArrayList(AUTO_FREEZE_KEY), new ArrayFn.Converter<Parcelable, View>() {
+            @Override
+            public View convert(Parcelable parcelable) {
+                return parceler.unparcel(parcelable);
+            }
+        });
     }
 
     public void clear() {
         parcelables.clear();
     }
 
-    public void freeze(int freezerIndex, int viewIndex) {
-        View view = layout.getChildAt(viewIndex); // TODO: wrap/unwrap here?
-        parcelables.add(freezerIndex, parceler.parcel(view));
-        layout.removeView(view);
-    }
-
-    public View unfreeze(int freezerIndex, int viewIndex) {
-        View view = parceler.unparcel(parcelables.remove(freezerIndex), layout);
-        layout.addView(view, viewIndex);
-        return view;
-    }
-
+    /**
+     * @param children current children
+     * @return a list of frozen views, top to bottom
+     */
     public List<View> freezeBottom(List<View> children) {
         List<Class> classes = map(children, new ArrayFn.Converter<View, Class>() {
             @Override
@@ -80,21 +82,24 @@ public class Freezer {
 
         ArrayList<View> frozen = new ArrayList<>(freeze);
         while (freeze-- > 0) {
-            frozen.add(0, layout.getChildAt(freeze));
-            freeze(freezerIndex, freeze);
+            View view = children.get(freeze);
+            frozen.add(view);
+            parcelables.add(freezerIndex, parceler.parcel(view));
         }
         return frozen;
     }
 
+    /**
+     * @return a list of unfrozen views, bottom to top
+     */
     public List<View> unfreezeBottom() {
         ArrayList<View> result = new ArrayList<>();
         List<Class> classes = getFrozenClasses();
         if (classes.size() > 0) {
             int required = analyzer.getRequirementCount(classes, classes.remove(classes.size() - 1)) + 1;
-            int viewIndex = 0;
             int freezerIndex = parcelables.size() - required;
             while (required-- > 0)
-                result.add(unfreeze(freezerIndex, viewIndex++));
+                result.add(parceler.unparcel(parcelables.remove(freezerIndex)));
         }
         return result;
     }

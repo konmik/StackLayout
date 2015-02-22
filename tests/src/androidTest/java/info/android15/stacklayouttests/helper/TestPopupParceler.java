@@ -36,7 +36,7 @@ public class TestPopupParceler extends BaseActivityTest<LayoutTestActivity> {
         ((TextView)inflater.unwrap(view1)).setText("1");
         Parcelable parcelable = parceler.parcel(view1);
         assertEquals(TextView.class, parceler.getClass(parcelable));
-        view1 = parceler.unparcel(parcelable, box);
+        view1 = parceler.unparcel(parcelable);
         assertEquals("1", ((TextView)inflater.unwrap(view1)).getText().toString());
     }
 }

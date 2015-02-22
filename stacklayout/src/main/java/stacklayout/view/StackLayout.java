@@ -29,7 +29,6 @@ import stacklayout.util.ArrayFn;
 import static stacklayout.util.ArrayFn.filter;
 import static stacklayout.util.ArrayFn.join;
 import static stacklayout.util.ArrayFn.map;
-import static stacklayout.util.ArrayFn.reverse;
 import static stacklayout.util.ViewFn.getChildren;
 
 public class StackLayout extends FrameLayout implements ViewStack {
@@ -119,7 +118,7 @@ public class StackLayout extends FrameLayout implements ViewStack {
         Parceler parceler = editor.parceler != null ? editor.parceler : new DefaultParceler(inflater);
         analyzer = editor.requirementsAnalyzer != null ? editor.requirementsAnalyzer : new DefaultRequirementsAnalyzer();
 
-        freezer = editor.freezer != null ? editor.freezer : new Freezer(this, inflater, parceler, analyzer);
+        freezer = editor.freezer != null ? editor.freezer : new Freezer(inflater, parceler, analyzer);
 
         actionHandler = editor.actionHandler != null ? editor.actionHandler : new ImmediateActionHandler();
         onDestroyViewListener = editor.onDestroyViewListener;
@@ -185,11 +184,13 @@ public class StackLayout extends FrameLayout implements ViewStack {
             throw new RuntimeException("Trying to pop a view that is not topmost");
 
         actionChild(ActionType.POP_OUT, wrap);
-        currentChildren.remove(currentChildren.size() - 1);
 
-        if (currentChildren.size() == 0) {
-            for (View wrap1 : freezer.unfreezeBottom())
+        if (currentChildren.size() == 1) {
+            int viewIndex = 0;
+            for (View wrap1 : freezer.unfreezeBottom()) {
+                addView(wrap1, viewIndex++);
                 actionChild(ActionType.POP_IN, wrap1);
+            }
         }
 
         inTransaction = false;
@@ -283,7 +284,8 @@ public class StackLayout extends FrameLayout implements ViewStack {
     private void freezeOnActionsEnd() {
         List<View> wraps = getPermanentChildren();
         if (wraps.size() > 0) {
-            for (View wrap : reverse(freezer.freezeBottom(wraps))) {
+            for (View wrap : freezer.freezeBottom(wraps)) {
+                removeView(wrap);
                 if (onDestroyViewListener != null)
                     onDestroyViewListener.onFreezeView(inflater.unwrap(wrap));
             }
