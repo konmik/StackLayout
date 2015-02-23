@@ -2,9 +2,13 @@
 Icons ic_arrow_back_white_24dp, ic_delete_white_24dp and ic_menu_white_24dp
 are released under an [Attribution 4.0 International](http://creativecommons.org/licenses/by/4.0/)
 license by Google, Inc: https://github.com/google/material-design-icons.
-and provided here without modifications.
+and are provided here without modifications.
 
-Everything except that icons is released under The MIT License.
+android-release-aar.gradle file has been released by Paul Blundell
+https://github.com/blundell/release-android-library
+under Apache License Version 2.0, January 2004 http://www.apache.org/licenses/.
+
+Everything except that data is released under The MIT License.
 
 The MIT License (MIT)
 

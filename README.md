@@ -1,6 +1,5 @@
 
 # StackLayout
----
 
 This library is intended to replace fragment stack, popups and dialogs with plain old views.
 
@@ -62,7 +61,6 @@ utility function or include a library I believe that I do this to write **less**
 so Flow library, while it is still better than fragments, is not acceptable for me.
 
 # About this release
----
 
 This is my first early-pre-alpha-pre-snapshot release of this library.
 It is not even published to Maven Central yet.
@@ -72,8 +70,24 @@ guarantee any compatibility with future versions.
 You could try this library, and if you find it useful, I would like to hear any feedback
 or improvement suggestions.
 
+# Install
+
+To install this library into a local repository run
+
+```
+./gradlew clean build generateRelease
+```
+
+Include it
+
+
+```
+dependencies {
+    compile 'info.android15.stacklayout:stacklayout:1.0'
+}
+```
+
 # How-tos and example
----
 
 Look into example to understand how it works. Later I will add some examples with pictures,
 so if you're not getting it, just come back a month later.
@@ -95,7 +109,6 @@ Key example elements:
 ```
 
 # Contact information
----
 
 Contact me with email: sirstripy-at-gmail-com or file an issue!
 

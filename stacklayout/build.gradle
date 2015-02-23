@@ -1,4 +1,13 @@
 apply plugin: 'com.android.library'
+apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'com.jfrog.bintray'
+
+
+ext {
+    PUBLISH_GROUP_ID = 'info.android15.stacklayout'
+    PUBLISH_ARTIFACT_ID = 'stacklayout'
+    PUBLISH_VERSION = '1.0.0'
+}
 
 android {
     compileSdkVersion 21
@@ -8,7 +17,7 @@ android {
         minSdkVersion 15
         targetSdkVersion 21
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.0"
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_7
@@ -17,7 +26,8 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:support-annotations:21.0.3'
     androidTestCompile 'com.jakewharton:butterknife:6.1.0'
 }
+
+apply from: 'android-release-aar.gradle'
