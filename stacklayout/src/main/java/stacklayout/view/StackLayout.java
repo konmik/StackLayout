@@ -18,15 +18,16 @@ import java.util.List;
 import stacklayout.action.ActionHandler;
 import stacklayout.action.ActionType;
 import stacklayout.action.ImmediateActionHandler;
-import stacklayout.helper.DefaultParceler;
+import stacklayout.helper.DefaultFreezer;
 import stacklayout.helper.DefaultWrappingInflater;
-import stacklayout.helper.Parceler;
+import stacklayout.helper.Freezer;
 import stacklayout.helper.WrappingInflater;
 import stacklayout.requirement.DefaultRequirementsAnalyzer;
 import stacklayout.requirement.RequirementsAnalyzer;
 import stacklayout.util.ArrayFn;
 
 import static stacklayout.util.ArrayFn.filter;
+import static stacklayout.util.ArrayFn.filterOut;
 import static stacklayout.util.ArrayFn.join;
 import static stacklayout.util.ArrayFn.map;
 import static stacklayout.util.ViewFn.getChildren;
@@ -67,7 +68,6 @@ public class StackLayout extends FrameLayout implements ViewStack {
     public class SettingsEditor {
         private Freezer freezer;
         private WrappingInflater inflater;
-        private Parceler parceler;
         private RequirementsAnalyzer requirementsAnalyzer;
         private ActionHandler actionHandler;
         private OnDestroyViewListener onDestroyViewListener;
@@ -80,11 +80,6 @@ public class StackLayout extends FrameLayout implements ViewStack {
 
         public SettingsEditor setInflater(WrappingInflater inflater) {
             this.inflater = inflater;
-            return this;
-        }
-
-        public SettingsEditor setParceler(Parceler parceler) {
-            this.parceler = parceler;
             return this;
         }
 
@@ -115,10 +110,9 @@ public class StackLayout extends FrameLayout implements ViewStack {
 
     private void apply(SettingsEditor editor) {
         inflater = editor.inflater != null ? editor.inflater : new DefaultWrappingInflater(LayoutInflater.from(getContext()), StackLayout.this);
-        Parceler parceler = editor.parceler != null ? editor.parceler : new DefaultParceler(inflater);
         analyzer = editor.requirementsAnalyzer != null ? editor.requirementsAnalyzer : new DefaultRequirementsAnalyzer();
 
-        freezer = editor.freezer != null ? editor.freezer : new Freezer(inflater, parceler, analyzer);
+        freezer = editor.freezer != null ? editor.freezer : new DefaultFreezer(inflater, analyzer);
 
         actionHandler = editor.actionHandler != null ? editor.actionHandler : new ImmediateActionHandler();
         onDestroyViewListener = editor.onDestroyViewListener;
@@ -132,7 +126,7 @@ public class StackLayout extends FrameLayout implements ViewStack {
     @Override
     protected Parcelable onSaveInstanceState() {
         Bundle bundle = new Bundle();
-        bundle.putBundle(FREEZER_KEY, freezer.save(getPermanentChildren()));
+        bundle.putBundle(FREEZER_KEY, freezer.save(getNotExitChildren()));
         bundle.putParcelable(PARENT_KEY, super.onSaveInstanceState());
         return bundle;
     }
@@ -141,7 +135,9 @@ public class StackLayout extends FrameLayout implements ViewStack {
     protected void onRestoreInstanceState(Parcelable state) {
         Bundle bundle = (Bundle)state;
         super.onRestoreInstanceState(bundle.getParcelable(PARENT_KEY));
-        freezer.restore(bundle.getBundle(FREEZER_KEY));
+        int viewIndex = 0;
+        for (View view : freezer.restore(bundle.getBundle(FREEZER_KEY)))
+            addView(view, viewIndex++);
         onActionEnd();
     }
 
@@ -227,6 +223,15 @@ public class StackLayout extends FrameLayout implements ViewStack {
     }
 
     @Override
+    public boolean back() {
+        List<View> children = getPermanentChildren();
+        if (freezer.size() + children.size() <= 1)
+            return false;
+        pop(inflater.unwrap(children.get(children.size() - 1)));
+        return true;
+    }
+
+    @Override
     public <T> T findBackView(View frontView, Class<T> backViewClass) {
         List<View> unwrappedStack = map(getPermanentChildren(), new ArrayFn.Converter<View, View>() {
             @Override
@@ -239,7 +244,7 @@ public class StackLayout extends FrameLayout implements ViewStack {
             if (backViewClass.isInstance(view))
                 return (T)view;
         }
-        return null;
+        throw new RuntimeException("Trying to find a view that does not exist");
     }
 
     public int getFrozenCount() {
@@ -292,23 +297,30 @@ public class StackLayout extends FrameLayout implements ViewStack {
         }
     }
 
+    /**
+     * @return A list of children that are not going to exit
+     */
+    private List<View> getNotExitChildren() {
+        return filterOut(getChildren(this), getDynamicViews(new ArrayFn.Predicate<Pair<ActionType, View>>() {
+            @Override
+            public boolean apply(Pair<ActionType, View> pair) { return pair.first.isExit(); }
+        }));
+    }
+
+    /**
+     * @return A list of children that are not going to freeze of exit
+     */
     private List<View> getPermanentChildren() {
-        final List<View> out = map(filter(join(inAction, completed), new ArrayFn.Predicate<Pair<ActionType, View>>() {
+        return filterOut(getChildren(this), getDynamicViews(new ArrayFn.Predicate<Pair<ActionType, View>>() {
             @Override
-            public boolean apply(Pair<ActionType, View> pair) {
-                return pair.first.isOut();
-            }
-        }), new ArrayFn.Converter<Pair<ActionType, View>, View>() {
+            public boolean apply(Pair<ActionType, View> pair) { return pair.first.isFreeze() || pair.first.isExit(); }
+        }));
+    }
+
+    private List<View> getDynamicViews(ArrayFn.Predicate<Pair<ActionType, View>> predicate) {
+        return map(filter(join(inAction, completed), predicate), new ArrayFn.Converter<Pair<ActionType, View>, View>() {
             @Override
-            public View convert(Pair<ActionType, View> pair) {
-                return pair.second;
-            }
-        });
-        return filter(getChildren(this), new ArrayFn.Predicate<View>() {
-            @Override
-            public boolean apply(View wrap) {
-                return !out.contains(wrap);
-            }
+            public View convert(Pair<ActionType, View> pair) { return pair.second; }
         });
     }
 

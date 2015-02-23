@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<info.android15.stacklayoutexample.DrawerView
+    android:id="@+id/drawer"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/drawer_background"
+    android:clickable="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/set0"
+            android:layout_width="@dimen/drawer_width"
+            android:layout_height="@dimen/drawer_width"
+            android:background="@drawable/default_background_selector"
+            android:gravity="center"
+            android:text="A"
+            android:textColor="#fff"
+            android:textSize="48dp" />
+
+        <TextView
+            android:id="@+id/set1"
+            android:layout_width="@dimen/drawer_width"
+            android:layout_height="@dimen/drawer_width"
+            android:background="@drawable/default_background_selector"
+            android:gravity="center"
+            android:text="欧字"
+            android:textColor="#fff"
+            android:textSize="32dp" />
+    </LinearLayout>
+</info.android15.stacklayoutexample.DrawerView>

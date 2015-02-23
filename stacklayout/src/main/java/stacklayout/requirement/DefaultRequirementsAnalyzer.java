@@ -21,6 +21,11 @@ public class DefaultRequirementsAnalyzer implements RequirementsAnalyzer {
         return stack.size() - index;
     }
 
+    /**
+     * This algorithm is used instead of {@link java.lang.annotation.Inherited} annotation because
+     * there can exist more than one {@link stacklayout.requirement.RequiredViews} in the views
+     * hierarchy.
+     */
     private static List<Class<?>> getRequiredViewClasses(Class clazz) {
         List<Class<?>> list = new ArrayList<>();
         while (clazz != null && !clazz.equals(View.class)) {

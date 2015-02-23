@@ -42,7 +42,7 @@ public class DefaultWrappingInflater implements WrappingInflater {
 
     private View addToContainer(ViewGroup container, View view) {
         ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams)container.getLayoutParams();
-        if (hasNoPaddingContainer(view.getClass())) {
+        if (view.getClass().isAnnotationPresent(NoPaddingContainer.class)) {
             lp.topMargin = -parent.getPaddingTop();
             lp.rightMargin = -parent.getPaddingRight();
             lp.bottomMargin = -parent.getPaddingBottom();
@@ -61,14 +61,5 @@ public class DefaultWrappingInflater implements WrappingInflater {
         lp.height = FrameLayout.LayoutParams.MATCH_PARENT;
         container.setLayoutParams(lp);
         return container;
-    }
-
-    private static boolean hasNoPaddingContainer(Class<?> clazz) {
-        while (!clazz.equals(View.class)) {
-            if (clazz.isAnnotationPresent(NoPaddingContainer.class))
-                return true;
-            clazz = clazz.getSuperclass();
-        }
-        return false;
     }
 }

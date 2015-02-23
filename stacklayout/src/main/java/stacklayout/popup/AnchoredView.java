@@ -3,7 +3,6 @@ package stacklayout.popup;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Rect;
-import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
@@ -16,6 +15,10 @@ import stacklayout.view.ViewStack;
 import static stacklayout.util.ViewFn.findParent;
 import static stacklayout.util.ViewFn.getRelativeRect;
 
+/**
+ * This is a {@link stacklayout.popup.PopupView} extension that aligns its content to
+ * a given view that is a part of an underlying view in {@link stacklayout.view.StackLayout}.
+ */
 @RequiredViews(AnchoredView.AnchorProvider.class)
 public class AnchoredView extends PopupView implements ViewTreeObserver.OnPreDrawListener {
 
@@ -25,8 +28,7 @@ public class AnchoredView extends PopupView implements ViewTreeObserver.OnPreDra
         View getAnchor(AnchoredView anchoredView);
     }
 
-    @Nullable
-    private AnchorProvider anchorProvider;
+    private View anchor;
     private Rect anchorRect = new Rect(INVALID_RECT);
     private int anchorCornerGravity;
     private int contentCornerGravity;
@@ -62,8 +64,7 @@ public class AnchoredView extends PopupView implements ViewTreeObserver.OnPreDra
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        ViewStack stack = findParent(this, ViewStack.class);
-        anchorProvider = stack.findBackView(this, AnchorProvider.class);
+        anchor = findParent(this, ViewStack.class).findBackView(this, AnchorProvider.class).getAnchor(this);
         getViewTreeObserver().addOnPreDrawListener(this);
     }
 
@@ -75,21 +76,21 @@ public class AnchoredView extends PopupView implements ViewTreeObserver.OnPreDra
 
     @Override
     public boolean onPreDraw() {
-        if (anchorProvider == null)
-            return true;
-
-        View anchor = anchorProvider.getAnchor(this);
         Rect rect = getRelativeRect(this, anchor);
         if (anchorRect.equals(rect))
             return true;
         anchorRect.set(rect);
 
         onUpdateLayoutParams();
-
         return true;
     }
 
-    // TODO: make the same size with FILL_VERTICAL or something
+    /**
+     * TODO: make a "same size" mode with FILL_VERTICAL or something.
+     * TODO: ability to rely on START & END in addition to LEFT & RIGHT (starting with Android 4.2).
+     * TODO: a flag that will prevent view's content to spread out of a StackLayout's size + a flag that will prevent view's content to spread out of a wrap's size.
+     * TODO: an option to show on the other side if there is not enough room on the current (show at the top in there is no room at the bottom, show on the left if there is no room at the right).
+     */
     protected void onUpdateLayoutParams() {
         int anchorX = (anchorCornerGravity & Gravity.HORIZONTAL_GRAVITY_MASK) == Gravity.LEFT ? anchorRect.left : anchorRect.right;
         int anchorY = (anchorCornerGravity & Gravity.VERTICAL_GRAVITY_MASK) == Gravity.TOP ? anchorRect.top : anchorRect.bottom;

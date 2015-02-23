@@ -58,10 +58,10 @@ public class ViewFn {
         });
     }
 
-    public static void onMeasured(final View view, final Runnable runnable1, final Runnable runnable2) {
+    public static void onMeasuredLayoutAnAnimate(final View view, final Runnable layout, final Runnable animation) {
         final boolean measured = view.getWidth() != 0 && view.getHeight() != 0;
         if (measured) {
-            runnable1.run();
+            layout.run();
             view.requestLayout();
         }
 
@@ -72,13 +72,13 @@ public class ViewFn {
             @Override
             public boolean onPreDraw() {
                 if (!done1) {
-                    runnable1.run();
+                    layout.run();
                     view.requestLayout();
                     done1 = true;
                     return false;
                 }
 
-                runnable2.run();
+                animation.run();
                 if (observer.isAlive())
                     observer.removeOnPreDrawListener(this);
                 return true;

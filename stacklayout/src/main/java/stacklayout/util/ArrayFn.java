@@ -22,6 +22,15 @@ public class ArrayFn {
         return result;
     }
 
+    public static <T> ArrayList<T> filterOut(Iterable<T> iterable, final List<T> exclusion) {
+        return filter(iterable, new Predicate<T>() {
+            @Override
+            public boolean apply(T t) {
+                return !exclusion.contains(t);
+            }
+        });
+    }
+
     public static <T1, T2> ArrayList<T2> map(Iterable<T1> iterable, Converter<T1, T2> converter) {
         ArrayList<T2> result = new ArrayList<>();
         for (T1 t : iterable)

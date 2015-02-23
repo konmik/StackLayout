@@ -1,1 +1,1 @@
-include ':stacklayout', ':tests', ':stacklayoutexample'
+include ':stacklayout', ':stacklayoutexample'

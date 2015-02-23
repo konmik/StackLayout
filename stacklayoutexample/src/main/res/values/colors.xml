@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="action_bar_background">#673ab7</color>
+    <color name="action_bar_bottom_line">#1b4b88</color>
+
+    <color name="form_unused_background">#dfeafa</color>
+    <color name="form_button_normal">#3363a1</color>
+    <color name="form_button_pressed">#66bdff</color>
+
+    <color name="tabs_delimiter">#b5c7e0</color>
+
+    <color name="dialog_dim">#B0000000</color>
+    <color name="dialog_button_normal">#1fadff</color>
+    <color name="dialog_button_pressed">#66bdff</color>
+
+    <color name="form_text">#000</color>
+    <color name="drawer_background">#775ad7</color>
+    <color name="pressed">#4fff</color>
+    <color name="white">#fff</color>
+    <color name="background">#dedede</color>
+
+</resources>

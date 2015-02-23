@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<info.android15.stacklayoutexample.NoteListScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/dummy"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:padding="4dp"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/action_bar_height"
+            android:background="@color/action_bar_background"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/buttonDrawer"
+                style="@style/ActionBarItem.SquareImage"
+                android:src="@drawable/ic_menu_white_24dp" />
+
+            <TextView
+                android:layout_marginLeft="4dp"
+                style="@style/ActionBarItem.WithText"
+                android:text="Notes" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@color/action_bar_background"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:background="#2000"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Save counter: "
+                    android:textColor="#fff" />
+
+                <TextView
+                    android:id="@+id/saveCounter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:freezesText="true"
+                    android:text="0"
+                    android:textColor="#fff" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="#2000"
+                android:gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Restore counter: "
+                    android:textColor="#fff" />
+
+                <TextView
+                    android:id="@+id/restoreCounter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:freezesText="true"
+                    android:text="0"
+                    android:textColor="#fff" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/content"
+            android:layout_width="match_parent"
+            android:background="@color/form_unused_background"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <ListView
+                android:id="@+id/listView"
+                android:listSelector="#0000"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/background"
+                android:divider="@null"
+                android:paddingBottom="8dp"
+                android:clipToPadding="false"
+                android:dividerHeight="0px" />
+        </FrameLayout>
+    </LinearLayout>
+</info.android15.stacklayoutexample.NoteListScreen>

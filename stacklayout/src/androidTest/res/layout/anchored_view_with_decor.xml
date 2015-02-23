@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<stacklayout.popup.TestAnchoredView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:content="@+id/content"
+    app:decor="@+id/decor"
+    app:dim="@+id/dim">
+
+    <View
+        android:id="@+id/dim"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#8000" />
+
+    <FrameLayout
+        android:id="@+id/decor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#2000"
+        android:paddingBottom="20dp"
+        android:paddingLeft="5dp"
+        android:paddingRight="15dp"
+        android:paddingTop="10dp">
+
+        <View
+            android:id="@+id/content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#20f0" />
+    </FrameLayout>
+
+</stacklayout.popup.TestAnchoredView>

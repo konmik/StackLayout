@@ -1,0 +1,94 @@
+<resources>
+
+    <style name="AppTheme" parent="android:Theme.Holo.Light.NoActionBar">
+        <item name="android:windowBackground">@null</item>
+    </style>
+
+    <style name="ActionBarItem">
+        <item name="android:background">@drawable/default_background_selector</item>
+        <item name="android:layout_height">48dp</item>
+    </style>
+
+    <style name="ActionBarItem.SquareImage">
+        <item name="android:layout_width">48dp</item>
+        <item name="android:scaleType">center</item>
+    </style>
+
+    <style name="ActionBarItem.WithText">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:paddingLeft">8dp</item>
+        <item name="android:paddingRight">8dp</item>
+        <item name="android:drawablePadding">8dp</item>
+        <item name="android:textColor">#fff</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:singleLine">true</item>
+    </style>
+
+    <style name="ActionBarItem.Title" parent="ActionBarItem.WithText" />
+
+    <style name="CustomEditText">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">44dp</item>
+        <item name="android:layout_margin">8dp</item>
+        <item name="android:textColorHint">#6b85a2</item>
+        <item name="android:imeOptions">flagNoExtractUi</item>
+    </style>
+
+    <style name="TabsItem">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:background">@drawable/default_background_selector</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">18sp</item>
+    </style>
+
+    <style name="TabsDelimiter">
+        <item name="android:layout_width">1dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_marginBottom">8dp</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:background">@color/tabs_delimiter</item>
+    </style>
+
+    <style name="PopupMenuItem">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:background">@drawable/default_background_selector</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:paddingLeft">20dp</item>
+        <item name="android:textColor">#fff</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <style name="FormButton">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/form_button_selector</item>
+        <item name="android:paddingBottom">8dp</item>
+        <item name="android:paddingLeft">20dp</item>
+        <item name="android:paddingRight">20dp</item>
+        <item name="android:paddingTop">8dp</item>
+        <item name="android:textColor">#fff</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="DialogButton" parent="FormButton">
+        <item name="android:background">@drawable/dialog_button_selector</item>
+    </style>
+
+    <style name="ActionBarBottomLine">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">2dp</item>
+        <item name="android:background">@color/action_bar_bottom_line</item>
+    </style>
+
+    <style name="ActionBarItem.WithText.Dialog">
+        <item name="android:drawablePadding">8dp</item>
+        <item name="android:paddingLeft">20dp</item>
+        <item name="android:paddingRight">20dp</item>
+    </style>
+
+</resources>

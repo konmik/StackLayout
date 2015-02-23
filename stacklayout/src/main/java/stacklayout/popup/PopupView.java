@@ -2,7 +2,6 @@ package stacklayout.popup;
 
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +14,31 @@ import stacklayout.view.ViewStack;
 
 import static stacklayout.util.ViewFn.findParent;
 
+/**
+ * This is a base view that is intended to be extended by views such as DialogView or AnchorView
+ * to show partially transparent fullscreen views with ability to bind content and optionally
+ * shadow and dim views.
+ * <p/>
+ * PopupView will be automatically popped from {@link stacklayout.view.StackLayout}
+ * if user clicks on the dim view. You can set an invisible dim view if you don't need the dim itself.
+ * <p/>
+ * The intended full view hierarchy looks like:
+ * Popup(Dim, Decor(Content))
+ * <p/>
+ * Shadow is named Decor in PopupView terms for a more general approach.
+ * <p/>
+ * You can set attributes like this:
+ * <pre>
+ * &lt;TestPopupView
+ *     android:layout_width="match_parent"
+ *     android:layout_height="match_parent"
+ *     content="@+id/content"
+ *     decor="@+id/decor"
+ *     dim="@+id/dim"&gt;
+ *        ... referenced views go here ...
+ * &lt;/TestPopupView&gt;
+ * </pre>
+ */
 @NoPaddingContainer
 @RequiredViews(View.class)
 public class PopupView extends FrameLayout {
@@ -58,12 +82,10 @@ public class PopupView extends FrameLayout {
             });
     }
 
-    @Nullable
     public View getDimView() {
         return dimView;
     }
 
-    @Nullable
     public ViewGroup getDecorView() {
         return decorView;
     }
