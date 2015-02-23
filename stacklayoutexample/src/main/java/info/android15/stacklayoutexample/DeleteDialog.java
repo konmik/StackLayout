@@ -54,7 +54,7 @@ public class DeleteDialog extends PopupView {
     @OnClick(R.id.buttonOK)
     void onButtonOK() {
         DeleteDialogOwner owner = viewStack.findBackView(this, DeleteDialogOwner.class);
-        viewStack.pop(DeleteDialog.this);
+        viewStack.pop(this);
         owner.onDeleteButtonOK(this);
     }
 
