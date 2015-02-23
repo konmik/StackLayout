@@ -83,7 +83,7 @@ Include it
 
 ```
 dependencies {
-    compile 'info.android15.stacklayout:stacklayout:1.0'
+    compile 'info.android15.stacklayout:stacklayout:1.0.0'
 }
 ```
 
