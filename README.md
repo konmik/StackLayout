@@ -1,5 +1,5 @@
 
-# StackLayout
+# StackLayout [NO LONGER DEVELOPED]
 
 This library is intended to replace fragment stack, popups and dialogs with plain old views.
 
